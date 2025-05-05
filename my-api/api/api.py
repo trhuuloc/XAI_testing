@@ -42,5 +42,17 @@ def query():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+def handler(request):
+    # Vercel serverless function handler
+    with app.test_request_context(
+        path=request.path,
+        method=request.method,
+        headers=dict(request.headers),
+        data=request.get_data()
+    ):
+        response = app.full_dispatch_request()
+        return {
+            "statusCode": response.status_code,
+            "headers": {"Content-Type": "application/json"},
+            "body": response.get_data(as_text=True)
+        }
